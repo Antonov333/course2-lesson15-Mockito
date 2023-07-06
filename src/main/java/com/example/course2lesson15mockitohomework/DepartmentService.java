@@ -5,18 +5,18 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 
 @Service
-public class EmployeeService {
+public class DepartmentService {
 
     private final int maxPersonnelNumber;
 
     private final HashMap<String, Employee> employeeList;
 
-    public EmployeeService() {
+    public DepartmentService() {
         employeeList = new HashMap<>();
         maxPersonnelNumber = 100;
     }
 
-    public EmployeeService(int maxPersonnelNumber) {
+    public DepartmentService(int maxPersonnelNumber) {
         employeeList = new HashMap<>();
         this.maxPersonnelNumber = maxPersonnelNumber;
     }
@@ -30,7 +30,7 @@ public class EmployeeService {
     }
 
     public boolean findEmployeeBoolean(String firstname, String lastname) {
-        if (employeeList.containsKey(firstname + lastname)) {
+        if (employeeList.containsKey(Employee.createKey(firstname, lastname))) {
             return true;
         } else {
             throw new EmployeeNotFoundException();
@@ -38,51 +38,39 @@ public class EmployeeService {
     }
 
     public Employee findEmployee(String firstName, String lastName) {
-        Employee employee = new Employee(firstName, lastName, "error");
-
-        NameCheck nameCheck = new NameCheck(firstName, lastName);
-
-        if (!nameCheck.isOk()) {
-            throw new WrongNameFormatException(nameCheck.getMessage());
-        }
 
         if (findEmployeeBoolean(firstName, lastName)) {
-            return new Employee(firstName, lastName, "enrolled");
+            return employeeList.get(Employee.createKey(firstName, lastName));
         } // findEmployeeBoolean never returns 'false' but throws NotFound exception instead
 
-        return new Employee("-", "- ", "... Looks like something went wrong");
+        return new Employee("-", "- ", " ... Looks like something went wrong ... ", -1, 0);
 
     }
 
     public Employee removeEmployee(String firstName, String lastname) {
-        Employee employee = new Employee(firstName, lastname, "removed");
-        NameCheck nameCheck = new NameCheck(firstName, lastname);
 
-        if (nameCheck.getCode() != 0) {
-            throw new WrongNameFormatException(nameCheck.getMessage());
-        }
+        Employee employee = employeeList.remove(Employee.createKey(firstName, lastname));
 
-        if (employeeList.remove(employee.getKey(), employee)) {
-            return employee;
-        } else {
+        if (employee == null) {
             throw new EmployeeNotFoundException("... this person has is not hired yet");
         }
+        return employee;
     }
 
     public String welcome() {
-        return "<h2>Welcome to homework Sets for Course 2 Lesson 8 ))</h2><br><br>" +
-                "<a href=\"http://localhost:8080/employee/add/?firstName=John&lastName=Smith\"> Add employee John Smith </a> | " +
-                "<a href=\"http://localhost:8080/employee/remove/?firstName=John&lastName=Smith\"> Remove employee John Smith </a> | " +
-                "<a href=\"http://localhost:8080/employee/find/\"> Find employee </a> | " +
-                "<a href=\"http://localhost:8080/employee/list\"> View employee list </a>";
+        return "<h2>Welcome to  Spring and Mockito homework for Course 2 Lesson 15 ))</h2><br><br>" +
+                "<a href=\"http://localhost:8080/department/add/?firstName=John&lastName=Smith\"> Add employee John Smith </a> | " +
+                "<a href=\"http://localhost:8080/department/remove/?firstName=John&lastName=Smith\"> Remove employee John Smith </a> | " +
+                "<a href=\"http://localhost:8080/department/find/\"> Find employee </a> | " +
+                "<a href=\"http://localhost:8080/department/employees\"> View employee list </a>";
     }
 
-    public Employee addEmployee(String firstName, String lastName) {
+    public Employee addEmployee(String firstName, String lastName, Integer deptId, Integer salary) {
 
-        NameCheck nameCheck = new NameCheck(firstName, lastName);
+        CandidateCheck candidateCheck = new CandidateCheck(firstName, lastName, deptId, salary);
 
-        if (nameCheck.getCode() != 0) {
-            throw new WrongNameFormatException(nameCheck.getMessage());
+        if (candidateCheck.getCode() != 0) {
+            throw new WrongNameFormatException(candidateCheck.getMessage());
         }
 
         if (getPersonnelNumber() >= getMaxPersonnelNumber()) {
@@ -97,7 +85,7 @@ public class EmployeeService {
             // it is OK if employee not found because we want to add him
         }
 
-        Employee employee = new Employee(firstName, lastName, "enrolled");
+        Employee employee = new Employee(firstName, lastName, Status.hired, deptId, salary);
 
         employeeList.put(employee.getKey(), employee);
 

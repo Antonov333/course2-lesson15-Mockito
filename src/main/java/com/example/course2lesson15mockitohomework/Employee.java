@@ -31,15 +31,7 @@ public class Employee implements Comparable<Employee> {
         this.status = status;
     }
 
-    public Employee(String firstName, String lastName, String status) {
-        this.firstName = StringUtils.capitalize(firstName);
-        this.lastName = StringUtils.capitalize(lastName);
-        this.status = status;
-        this.deptId = 0;
-        this.salary = 0;
-    }
-
-    public Employee(String firstName, String lastName, String status, int deptId, int salary) {
+    public Employee(String firstName, String lastName, String status, Integer deptId, Integer salary) {
         this.firstName = StringUtils.capitalize(firstName);
         this.lastName = StringUtils.capitalize(lastName);
         this.status = status;
@@ -48,7 +40,7 @@ public class Employee implements Comparable<Employee> {
     }
 
     public String getKey() {
-        return firstName + lastName;
+        return createKey(firstName, lastName);
     }
 
     public int getSalary() {
@@ -70,7 +62,7 @@ public class Employee implements Comparable<Employee> {
             return false;
         }
         return Objects.equals(firstName, ((Employee) other).getFirstName())
-                && Objects.equals(lastName, ((Employee) other).getLastName());
+                & Objects.equals(lastName, ((Employee) other).getLastName());
     }
 
     @Override
@@ -83,5 +75,9 @@ public class Employee implements Comparable<Employee> {
         Integer thisDeptId = Integer.valueOf(deptId);
         Integer otherDeptId = Integer.valueOf(o.getDeptId());
         return thisDeptId.compareTo(otherDeptId);
+    }
+
+    public static String createKey(String firstName, String lastName) {
+        return firstName + lastName;
     }
 }
