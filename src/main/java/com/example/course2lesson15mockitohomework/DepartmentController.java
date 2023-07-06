@@ -10,7 +10,7 @@ import java.util.Map;
 @RequestMapping("/department")
 public class DepartmentController {
 
-    DepartmentService departmentService = new DepartmentService(10);
+    DepartmentService departmentService = new DepartmentService(new EmployeeService());
 
     @GetMapping()
     public String welcome() {
@@ -101,10 +101,5 @@ public class DepartmentController {
 //    public String employee() {
 //        return departmentService.welcome();
 //    }
-
-    @GetMapping(path = "/departments")
-    public String depts() {
-        return departmentService.departments();
-    }
 
 }

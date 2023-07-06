@@ -8,54 +8,31 @@ import java.util.stream.Collectors;
 @Service
 public class DepartmentService {
 
-    private final int maxPersonnelNumber;
+    private final EmployeeService employeeService;
 
-    private final HashMap<String, Employee> employeeMap;
 
-    public DepartmentService() {
-        employeeMap = new HashMap<>();
-        maxPersonnelNumber = 100;
-    }
-
-    public DepartmentService(int maxPersonnelNumber) {
-        employeeMap = new HashMap<>();
-        this.maxPersonnelNumber = maxPersonnelNumber;
+    public DepartmentService(EmployeeService employeeService) {
+        this.employeeService = employeeService;
     }
 
     public int getMaxPersonnelNumber() {
-        return maxPersonnelNumber;
+        return employeeService.getMaxPersonnelNumber();
     }
 
     public int getPersonnelNumber() {
-        return employeeMap.size();
+        return (employeeService.getEmployeeList()).size();
     }
 
     public boolean findEmployeeBoolean(String firstname, String lastname) {
-        if (employeeMap.containsKey(Employee.createKey(firstname, lastname))) {
-            return true;
-        } else {
-            throw new EmployeeNotFoundException();
-        }
+        return employeeService.findEmployeeBoolean(firstname, lastname);
     }
 
     public Employee findEmployee(String firstName, String lastName) {
-
-        if (findEmployeeBoolean(firstName, lastName)) {
-            return employeeMap.get(Employee.createKey(firstName, lastName));
-        } // findEmployeeBoolean never returns 'false' but throws NotFound exception instead
-
-        return new Employee("-", "- ", " ... Looks like something went wrong ... ", -1, 0);
-
+        return employeeService.findEmployee(firstName, lastName);
     }
 
     public Employee removeEmployee(String firstName, String lastname) {
-
-        Employee employee = employeeMap.remove(Employee.createKey(firstName, lastname));
-
-        if (employee == null) {
-            throw new EmployeeNotFoundException("... this person has is not hired yet");
-        }
-        return employee;
+        return employeeService.removeEmployee(firstName, lastname);
     }
 
     public String welcome() {
@@ -70,38 +47,15 @@ public class DepartmentService {
 
     public Employee addEmployee(String firstName, String lastName, Integer deptId, Integer salary) {
 
-        CandidateCheck candidateCheck = new CandidateCheck(firstName, lastName, deptId, salary);
-
-        if (candidateCheck.getCode() != 0) {
-            throw new WrongNameFormatException(candidateCheck.getMessage());
-        }
-
-        if (getPersonnelNumber() >= getMaxPersonnelNumber()) {
-            throw new EmployeeStorageIsFullException("Personnel array is full. No vacant position at the moment");
-        }
-
-        try {
-            if (findEmployeeBoolean(firstName, lastName)) {
-                throw new EmployeeAlreadyAddedException("already hired");
-            }
-        } catch (EmployeeNotFoundException employeeNotFound) {
-            // it is OK if employee not found because we want to add him
-        }
-
-        Employee employee = new Employee(firstName, lastName, Status.hired, deptId, salary);
-
-        employeeMap.put(employee.getKey(), employee);
+        Employee employee = employeeService.addEmployee(firstName, lastName, deptId, salary);
 
         return employee;
     }
 
 
     public HashMap<String, Employee> getEmployeeMap() {
+        HashMap<String, Employee> employeeMap = employeeService.getEmployeeList();
         return employeeMap;
-    }
-
-    public String departments() {
-        return "Under construction, sorry";
     }
 
     public HashMap<String, Employee> exampleHiring() {
@@ -114,11 +68,12 @@ public class DepartmentService {
         addEmployee("James", "Alarmson", 2, r.nextInt(50000, 100000));
         addEmployee("Pamela", "Anderson", 5, r.nextInt(50000, 100000));
         addEmployee("Tommy", "Lee", 5, r.nextInt(50000, 100000));
-        return employeeMap;
+        return getEmployeeMap();
 
     }
 
     public List<Employee> getDeptCrew(Integer dept) {
+        HashMap<String, Employee> employeeMap = employeeService.getEmployeeList();
         List<Employee> allCrew = new ArrayList<Employee>(employeeMap.values());
 
 
@@ -165,6 +120,7 @@ public class DepartmentService {
     }
 
     public Map<Integer, List<Employee>> getListByDepts() {
+        HashMap<String, Employee> employeeMap = employeeService.getEmployeeList();
         List<Employee> crewAll = new ArrayList<Employee>(employeeMap.values());
         List<Integer> deptList = new ArrayList<>();
         Map<Integer, List<Employee>> crewByDepts = new HashMap<>();
