@@ -4,7 +4,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 
-public class Employee implements Comparable<Employee> {
+public class Employee /*implements Comparable<Employee> */ {
     private final String firstName;
     private final String lastName;
     private final int salary;
@@ -70,12 +70,13 @@ public class Employee implements Comparable<Employee> {
         return Objects.hash(firstName, lastName);
     }
 
+    /*
     @Override
     public int compareTo(Employee o) {
         Integer thisDeptId = Integer.valueOf(deptId);
         Integer otherDeptId = Integer.valueOf(o.getDeptId());
         return thisDeptId.compareTo(otherDeptId);
-    }
+    }*/
 
     public static String createKey(String firstName, String lastName) {
         return firstName + lastName;

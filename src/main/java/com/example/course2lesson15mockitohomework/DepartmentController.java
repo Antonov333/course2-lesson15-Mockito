@@ -3,33 +3,31 @@ package com.example.course2lesson15mockitohomework;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/department")
 public class DepartmentController {
 
-    DepartmentService departmentService = new DepartmentService(3);
+    DepartmentService departmentService = new DepartmentService(10);
 
     @GetMapping()
     public String welcome() {
         return departmentService.welcome();
     }
 
-    @GetMapping(value = "/{deptId}")
-    public String myDeptId(@PathVariable int deptId) {
-        return "deptId = " + deptId;
+    @GetMapping(path = "/exampleHiring")
+    public HashMap<String, Employee> hiringImaginedPeople() {
+        departmentService.exampleHiring();
+        return departmentService.getEmployeeMap();
     }
 
-    @GetMapping(value = "/{myId}/nextcommand")
-    public String nextCommand(@PathVariable int myId) {
-        return "nextCommand<br><br>myId =" + myId;
-    }
-
-    @GetMapping(path = "/add")
+    @GetMapping(path = "/{deptId}/add")
     public Employee add(@RequestParam(required = false, name = "firstName") String firstName,
                         @RequestParam(required = false, name = "lastName") String lastName,
                         @RequestParam(required = false, name = "salary") Integer salary,
-                        @RequestParam(required = false, name = "deptId") Integer deptId) {
+                        @PathVariable Integer deptId) {
         try {
             return departmentService.addEmployee(firstName, lastName, salary, deptId);
         } catch (EmployeeAlreadyAddedException alreadyAdded) {
@@ -62,8 +60,28 @@ public class DepartmentController {
 
 
     @GetMapping(path = "/employees")
-    public HashMap<String, Employee> list() {
-        return departmentService.getEmployeeList();
+    public Map<Integer, List<Employee>> listByDepts() {
+        return departmentService.getListByDepts();
+    }
+
+    @GetMapping(path = "/{deptId}/employees")
+    public List<Employee> getDeptCrew(@PathVariable Integer deptId) {
+        return departmentService.getDeptCrew(deptId);
+    }
+
+    @GetMapping(value = "/{deptId}/salary/sum")
+    public Integer salarySum(@PathVariable Integer deptId) {
+        return departmentService.deptSalarySum(deptId);
+    }
+
+    @GetMapping(value = "/{deptId}/salary/max")
+    public Integer salaryMax(@PathVariable Integer deptId) {
+        return departmentService.deptSalaryMax(deptId);
+    }
+
+    @GetMapping(value = "/{deptId}/salary/min")
+    public Integer salaryMin(@PathVariable Integer deptId) {
+        return departmentService.deptSalaryMin(deptId);
     }
 
     @GetMapping(path = "/find")
@@ -79,10 +97,10 @@ public class DepartmentController {
         }
     }
 
-    @GetMapping(path = "/employee")
-    public String employee() {
-        return departmentService.welcome();
-    }
+//    @GetMapping(path = "/employee")
+//    public String employee() {
+//        return departmentService.welcome();
+//    }
 
     @GetMapping(path = "/departments")
     public String depts() {
