@@ -8,23 +8,28 @@ import java.util.stream.Collectors;
 @Service
 public class DepartmentService {
 
-    private final EmployeeService employeeService;
+    private EmployeeService employeeService;
 
 
     public DepartmentService(EmployeeService employeeService) {
         this.employeeService = employeeService;
     }
 
-    public int getMaxPersonnelNumber() {
+    public int getMaxPersonnelNumber() { // covered by test
         return employeeService.getMaxPersonnelNumber();
     }
 
-    public int getPersonnelNumber() {
-        return (employeeService.getEmployeeList()).size();
+    public int getPersonnelNumber() { // covered by test
+        return employeeService.getPersonnelNumber();
     }
 
     public boolean findEmployeeBoolean(String firstname, String lastname) {
-        return employeeService.findEmployeeBoolean(firstname, lastname);
+
+        if (employeeService.getEmployeeList().containsKey(Employee.createKey(firstname, lastname))) {
+            return true;
+        } else {
+            throw new EmployeeNotFoundException();
+        }
     }
 
     public Employee findEmployee(String firstName, String lastName) {
