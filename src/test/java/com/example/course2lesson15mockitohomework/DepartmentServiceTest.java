@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,7 +29,7 @@ public class DepartmentServiceTest {
     DepartmentService departmentService;
 
 
-    public static HashMap<String, Employee> exampleCrew() {
+    public static HashMap<String, Employee> exampleCrewRandomDeptAndSalary() {
 
         HashMap<String, Employee> crew = new HashMap<>();
         List<PersonName> personNameList = getExampleNameList();
@@ -39,6 +40,27 @@ public class DepartmentServiceTest {
 
         personNameList.forEach(personName -> list.add(new Employee(personName.getFirstName(), personName.getLastName(), status,
                 r.nextInt(1, 3), r.nextInt(50000, 150000))));
+
+        list.forEach(employee -> crew.put(Employee.createKey(employee.getFirstName(), employee.getLastName()), employee));
+
+        return crew;
+    }
+
+    public static HashMap<String, Employee> exampleCrew() {
+
+        HashMap<String, Employee> crew = new HashMap<>();
+        List<PersonName> nameList = getExampleNameList();
+        String status = Status.hired;
+
+        List<Employee> list = new ArrayList<Employee>(Arrays.asList(
+                new Employee(nameList.get(0).getFirstName(), nameList.get(0).getLastName(), status, 1, 99999),
+                new Employee(nameList.get(1).getFirstName(), nameList.get(1).getLastName(), status, 1, 99999),
+                new Employee(nameList.get(2).getFirstName(), nameList.get(2).getLastName(), status, 1, 99999),
+                new Employee(nameList.get(3).getFirstName(), nameList.get(3).getLastName(), status, 5, 99999),
+                new Employee(nameList.get(4).getFirstName(), nameList.get(4).getLastName(), status, 5, 99999),
+                new Employee(nameList.get(5).getFirstName(), nameList.get(5).getLastName(), status, 5, 99999),
+                new Employee(nameList.get(6).getFirstName(), nameList.get(6).getLastName(), status, 3, 99999),
+                new Employee(nameList.get(7).getFirstName(), nameList.get(7).getLastName(), status, 3, 99999)));
 
         list.forEach(employee -> crew.put(Employee.createKey(employee.getFirstName(), employee.getLastName()), employee));
 
@@ -65,6 +87,31 @@ public class DepartmentServiceTest {
                 new PersonName("Tommy", "Lee")));
 
         return personNames;
+    }
+
+    private static Stream<Arguments> namesProvider() {
+
+        List<PersonName> personNames = getExampleNameList();
+
+//        Stream s  = personNames.stream(personName -> Arguments.of(personName));
+
+        return Stream.of(
+                Arguments.of(getExampleNameList().get(0).getFirstName(), getExampleNameList().get(0).getLastName()),
+                Arguments.of(getExampleNameList().get(1).getFirstName(), getExampleNameList().get(1).getLastName()),
+                Arguments.of(getExampleNameList().get(2).getFirstName(), getExampleNameList().get(2).getLastName()),
+                Arguments.of(getExampleNameList().get(3).getFirstName(), getExampleNameList().get(3).getLastName()),
+                Arguments.of(getExampleNameList().get(4).getFirstName(), getExampleNameList().get(4).getLastName()),
+                Arguments.of(getExampleNameList().get(5).getFirstName(), getExampleNameList().get(5).getLastName()),
+                Arguments.of(getExampleNameList().get(6).getFirstName(), getExampleNameList().get(6).getLastName()),
+                Arguments.of(getExampleNameList().get(7).getFirstName(), getExampleNameList().get(7).getLastName())
+        );
+
+
+    }
+
+    private static Stream<Arguments> namesProvider2() {
+        List<PersonName> personNames = getExampleNameList();
+        return personNames.stream().map(personName -> Arguments.of(personName));
     }
 
     @Test
@@ -105,7 +152,6 @@ public class DepartmentServiceTest {
 
     }
 
-
     @DisplayName("Parameterized test for findEmployeeBooleanTest(String firstName, String Lastname) method with stream")
     @ParameterizedTest(name = "{index} => firstName={0}, lastName={1}")
     @MethodSource("namesProvider")
@@ -130,31 +176,118 @@ public class DepartmentServiceTest {
 
     }
 
-    private static Stream<Arguments> namesProvider() {
+    @Test
+    void addEmployeeTest() {
+        String firstName = getStrangerName().getFirstName();
+        String lastName = getStrangerName().getLastName();
+        String key = Employee.createKey(firstName, lastName);
+        HashMap<String, Employee> testCrew = exampleCrew();
 
-        List<PersonName> personNames = getExampleNameList();
+        when(employeeServiceMock.getEmployeeList()).thenReturn(testCrew); // make sure new person is not found on list of employees
+        assertThrows(RuntimeException.class, () -> departmentService.findEmployee(firstName, lastName));
 
-//        Stream s  = personNames.stream(personName -> Arguments.of(personName));
-
-        return Stream.of(
-                Arguments.of(getExampleNameList().get(0).getFirstName(), getExampleNameList().get(0).getLastName()),
-                Arguments.of(getExampleNameList().get(1).getFirstName(), getExampleNameList().get(1).getLastName()),
-                Arguments.of(getExampleNameList().get(2).getFirstName(), getExampleNameList().get(2).getLastName()),
-                Arguments.of(getExampleNameList().get(3).getFirstName(), getExampleNameList().get(3).getLastName()),
-                Arguments.of(getExampleNameList().get(4).getFirstName(), getExampleNameList().get(4).getLastName()),
-                Arguments.of(getExampleNameList().get(5).getFirstName(), getExampleNameList().get(5).getLastName()),
-                Arguments.of(getExampleNameList().get(6).getFirstName(), getExampleNameList().get(6).getLastName()),
-                Arguments.of(getExampleNameList().get(7).getFirstName(), getExampleNameList().get(7).getLastName())
-        );
-
+        testCrew.put(key, new Employee(firstName, lastName, Status.hired, 3, 99555));
+        assertEquals(new Employee(firstName, lastName, Status.hired, 3, 99500),
+                departmentService.findEmployee(firstName, lastName));
 
     }
 
-    private static Stream<Arguments> namesProvider2() {
 
-        List<PersonName> personNames = getExampleNameList();
+    @Test
+    void addEmployeeTestNice() {
+        String firstName = getStrangerName().getFirstName();
+        String lastName = getStrangerName().getLastName();
+        Integer dept = 3;
+        Integer salary = 99500;
+        when(employeeServiceMock.addEmployee(getStrangerName().getFirstName(),
+                getStrangerName().getLastName(), 3, 99500)).
+                thenReturn(new Employee(firstName, lastName, Status.hired, dept, salary));
+        Employee expected = new Employee(firstName, lastName, Status.hired, dept, salary);
+        assertEquals(expected, departmentService.addEmployee(firstName, lastName, dept, salary));
 
-        return personNames.stream().map(personName -> Arguments.of(personName));
+        String key = Employee.createKey("John", "Smith");
+        HashMap<String, Employee> crew = exampleCrew();
+        Employee alreadyHiredPerson = crew.get(key);
+
+        when(employeeServiceMock.addEmployee(alreadyHiredPerson.getFirstName(),
+                alreadyHiredPerson.getLastName(),
+                alreadyHiredPerson.getDeptId(),
+                alreadyHiredPerson.getSalary())).thenThrow(EmployeeAlreadyAddedException.class);
+
+        assertThrows(EmployeeAlreadyAddedException.class, () -> departmentService.addEmployee(
+                alreadyHiredPerson.getFirstName(),
+                alreadyHiredPerson.getLastName(),
+                alreadyHiredPerson.getDeptId(),
+                alreadyHiredPerson.getSalary()));
+    }
+
+    @Test
+    void getDeptCrewTest() {
+
+        when(employeeServiceMock.getEmployeeList()).thenReturn(exampleCrew());
+        assertThrows(DeptIdInvalidException.class, () -> departmentService.getDeptCrew(null));
+        assertThrows(DeptIdInvalidException.class, () -> departmentService.getDeptCrew(11));
+
+        List<Employee> allCrew = exampleCrew().values().stream().toList();
+        Set<Employee> expectedDept1Set = allCrew.stream().filter(employee -> employee.isDeptId(1)).collect(Collectors.toSet());
+        Set<Employee> expectedDept3Set = allCrew.stream().filter(employee -> employee.isDeptId(3)).collect(Collectors.toSet());
+        Set<Employee> expectedDept5Set = allCrew.stream().filter(employee -> employee.isDeptId(5)).collect(Collectors.toSet());
+
+        Set<Employee> actualDept1Set = departmentService.getDeptCrew(1).stream().collect(Collectors.toSet());
+        Set<Employee> actualDept5Set = departmentService.getDeptCrew(5).stream().collect(Collectors.toSet());
+        Set<Employee> actualDept3Set = departmentService.getDeptCrew(3).stream().collect(Collectors.toSet());
+
+        assertEquals(expectedDept1Set, actualDept1Set);
+        assertEquals(expectedDept3Set, actualDept3Set);
+        assertEquals(expectedDept5Set, actualDept5Set);
+    }
+
+    @Test
+    void deptSalarySumTest() {
+        HashMap<String, Employee> testCrew = exampleCrewRandomDeptAndSalary();
+        Set<Integer> deptSet = testCrew.values().stream().map(employee -> employee.getDeptId()).collect(Collectors.toSet());
+
+        when(employeeServiceMock.getEmployeeList()).thenReturn(testCrew);
+        for (Integer i : deptSet
+        ) {
+            Integer expected = 0;
+            List<Employee> deptCrew = departmentService.getDeptCrew(i);
+            for (Employee e : deptCrew
+            ) {
+                expected += e.getSalary();
+            }
+            assertEquals(expected, departmentService.deptSalarySum(i));
+        } // made sure all department salaries counted correctly
+
+        assertThrows(DeptIdInvalidException.class, () -> departmentService.deptSalarySum(null));
+        //made sure exception thrown in case of null deptId
+
+        assertThrows(DeptIdInvalidException.class, () -> departmentService.deptSalarySum(0));
+        // made sure exception thrown in case of non-existing department
+    }
+
+    @Test
+    void deptSalaryMaxTest() {
+        HashMap<String, Employee> testCrew = exampleCrewRandomDeptAndSalary();
+        Set<Integer> deptSet = testCrew.values().stream().map(employee -> employee.getDeptId()).collect(Collectors.toSet());
+
+        when(employeeServiceMock.getEmployeeList()).thenReturn(testCrew);
+        for (Integer i : deptSet
+        ) {
+            Integer expected = 0;
+            List<Employee> deptCrew = departmentService.getDeptCrew(i);
+            deptCrew.sort(Comparator.comparingInt(employee -> employee.getSalary()));
+            expected = deptCrew.get(deptCrew.size() - 1).getSalary();
+            assertEquals(expected, departmentService.deptSalaryMax(i));
+        } // made sure all department salaries counted correctly
+
+        assertThrows(DeptIdInvalidException.class, () -> departmentService.deptSalarySum(null));
+        //made sure exception thrown in case of null deptId
+
+        assertThrows(DeptIdInvalidException.class, () -> departmentService.deptSalarySum(0));
+        // made sure exception thrown in case of non-existing department
+    }
+}
 
 
 //        personNames.forEach(personName -> Arguments.of(personName.getFirstName(),personName.getLastName()));
@@ -178,7 +311,3 @@ public class DepartmentServiceTest {
      * все методы сервиса тестами с максимальным количеством придуманных ситуаций.
      * Например, когда переданный отдел отсутствует или вообще не передан пользователем.
      *  */
-
-
-    }
-}

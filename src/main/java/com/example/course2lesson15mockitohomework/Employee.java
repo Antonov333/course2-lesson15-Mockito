@@ -51,7 +51,7 @@ public class Employee /*implements Comparable<Employee> */ {
         return deptId;
     }
 
-    public boolean isDeptId(int deptId) {
+    public boolean isDeptId(Integer deptId) {
         return (deptId == this.deptId);
     }
 

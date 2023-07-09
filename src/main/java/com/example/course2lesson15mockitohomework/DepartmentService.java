@@ -33,7 +33,13 @@ public class DepartmentService {
     }
 
     public Employee findEmployee(String firstName, String lastName) {
-        return employeeService.findEmployee(firstName, lastName);
+        HashMap<String, Employee> employeeHashMap = employeeService.getEmployeeList();
+        String key = Employee.createKey(firstName, lastName);
+        if (employeeHashMap.containsKey(key)) {
+            return employeeHashMap.get(key);
+        } else {
+            throw new EmployeeNotFoundException();
+        }
     }
 
     public Employee removeEmployee(String firstName, String lastname) {
@@ -51,7 +57,7 @@ public class DepartmentService {
     }
 
     public Employee addEmployee(String firstName, String lastName, Integer deptId, Integer salary) {
-
+// covered by test
         Employee employee = employeeService.addEmployee(firstName, lastName, deptId, salary);
 
         return employee;
@@ -63,7 +69,8 @@ public class DepartmentService {
         return employeeMap;
     }
 
-    public HashMap<String, Employee> exampleHiring() {
+    public HashMap<String, Employee> exampleHiring() { // not tested because it is utility method intended to support demo
+        // run of Application
         Random r = new Random();
         addEmployee("John", "Smith", 5, r.nextInt(50000, 100000));
 
@@ -77,22 +84,28 @@ public class DepartmentService {
 
     }
 
-    public List<Employee> getDeptCrew(Integer dept) {
+    public List<Employee> getDeptCrew(Integer dept) { // covered by test
         HashMap<String, Employee> employeeMap = employeeService.getEmployeeList();
         List<Employee> allCrew = new ArrayList<Employee>(employeeMap.values());
 
-
         if (dept == null) {
-            List<Employee> crewSortedByDept;
-            crewSortedByDept = allCrew.stream().sorted().collect(Collectors.toList());
-            return crewSortedByDept;
+            throw new DeptIdInvalidException("department number is missing");
         }
+
+        Set<Integer> deptIdSet;
+
+        deptIdSet = allCrew.stream().map(employee -> employee.getDeptId()).collect(Collectors.toSet());
+
+        if (!deptIdSet.contains(dept)) {
+            throw new DeptIdInvalidException("department does not exist");
+        }
+
         List<Employee> deptCrew = allCrew.stream().filter(employee -> employee.isDeptId(dept)).
                 collect(Collectors.toList());
         return deptCrew;
     }
 
-    public Integer deptSalarySum(Integer deptId) {
+    public Integer deptSalarySum(Integer deptId) { // covered by test
         List<Employee> deptCrew = getDeptCrew(deptId);
         Integer sum = 0;
         for (Employee e : deptCrew) {

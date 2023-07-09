@@ -29,7 +29,7 @@ public class DepartmentController {
                         @RequestParam(required = false, name = "salary") Integer salary,
                         @PathVariable Integer deptId) {
         try {
-            return departmentService.addEmployee(firstName, lastName, salary, deptId);
+            return departmentService.addEmployee(firstName, lastName, deptId, salary);
         } catch (EmployeeAlreadyAddedException alreadyAdded) {
             return new Employee(firstName, lastName, alreadyAdded.getMessage(), null, null);
         } catch (EmployeeStorageIsFullException arrayIsFull) {
