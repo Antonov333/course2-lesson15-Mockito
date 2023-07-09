@@ -6,24 +6,26 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class DepartmentServiceTest {
 
-    private final EmployeeService employeeServiceMock = mock(EmployeeService.class);
+    //    private final EmployeeService employeeServiceMock = mock(EmployeeService.class);
+//    private DepartmentService departmentService = new DepartmentService(employeeServiceMock);
+    @Mock
+    EmployeeService employeeServiceMock;
 
-//    private final EmployeeService employeeServiceMock = new EmployeeService(15) ;
-
-    public DepartmentService departmentService = new DepartmentService(employeeServiceMock);
+    @InjectMocks
+    DepartmentService departmentService;
 
 
     public static HashMap<String, Employee> exampleCrew() {
@@ -108,22 +110,66 @@ public class DepartmentServiceTest {
     @ParameterizedTest(name = "{index} => firstName={0}, lastName={1}")
     @MethodSource("namesProvider")
     public void findEmployeeBooleanTest(String firstName, String lastName) {
-        System.out.println(firstName + " " + lastName);
+        when(employeeServiceMock.getEmployeeList()).thenReturn(exampleCrew());
+        assertTrue(departmentService.findEmployeeBoolean(firstName, lastName)); // each employee findable
 
-//        assertEquals(expected, calculatorService.plus(num1, num2));
+        assertThrows(EmployeeNotFoundException.class, () -> departmentService.findEmployeeBoolean(
+                getStrangerName().getFirstName(), getStrangerName().getLastName())); // absent person name causes exceptioin
+
+    }
+
+    @DisplayName("Parameterized test for findEmployeeBooleanTest(String firstName, String Lastname) method with stream")
+    @ParameterizedTest(name = "personName")
+    @MethodSource("namesProvider2")
+    public void findEmployeeBooleanTest2(PersonName personName) {
+        when(employeeServiceMock.getEmployeeList()).thenReturn(exampleCrew());
+        assertTrue(departmentService.findEmployeeBoolean(personName.getFirstName(), personName.getLastName())); // each employee findable
+
+        assertThrows(EmployeeNotFoundException.class, () -> departmentService.findEmployeeBoolean(
+                getStrangerName().getFirstName(), getStrangerName().getLastName())); // absent person name causes exceptioin
 
     }
 
     private static Stream<Arguments> namesProvider() {
+
+        List<PersonName> personNames = getExampleNameList();
+
+//        Stream s  = personNames.stream(personName -> Arguments.of(personName));
+
         return Stream.of(
                 Arguments.of(getExampleNameList().get(0).getFirstName(), getExampleNameList().get(0).getLastName()),
                 Arguments.of(getExampleNameList().get(1).getFirstName(), getExampleNameList().get(1).getLastName()),
                 Arguments.of(getExampleNameList().get(2).getFirstName(), getExampleNameList().get(2).getLastName()),
-                Arguments.of(getExampleNameList().get(3).getFirstName(), getExampleNameList().get(2).getLastName()),
-                Arguments.of(getExampleNameList().get(4).getFirstName(), getExampleNameList().get(2).getLastName()),
-                Arguments.of(getExampleNameList().get(5).getFirstName(), getExampleNameList().get(2).getLastName()),
-                Arguments.of(getExampleNameList().get(6).getFirstName(), getExampleNameList().get(2).getLastName()),
-                Arguments.of(getExampleNameList().get(7).getFirstName(), getExampleNameList().get(2).getLastName()));
+                Arguments.of(getExampleNameList().get(3).getFirstName(), getExampleNameList().get(3).getLastName()),
+                Arguments.of(getExampleNameList().get(4).getFirstName(), getExampleNameList().get(4).getLastName()),
+                Arguments.of(getExampleNameList().get(5).getFirstName(), getExampleNameList().get(5).getLastName()),
+                Arguments.of(getExampleNameList().get(6).getFirstName(), getExampleNameList().get(6).getLastName()),
+                Arguments.of(getExampleNameList().get(7).getFirstName(), getExampleNameList().get(7).getLastName())
+        );
+
+
+    }
+
+    private static Stream<Arguments> namesProvider2() {
+
+        List<PersonName> personNames = getExampleNameList();
+
+        return personNames.stream().map(personName -> Arguments.of(personName));
+
+
+//        personNames.forEach(personName -> Arguments.of(personName.getFirstName(),personName.getLastName()));
+
+ /*       return Stream.of(
+                Arguments.of(getExampleNameList().get(0)),
+                Arguments.of(getExampleNameList().get(1)),
+                Arguments.of(getExampleNameList().get(2)),
+                Arguments.of(getExampleNameList().get(3)),
+                Arguments.of(getExampleNameList().get(4)),
+                Arguments.of(getExampleNameList().get(5)),
+                Arguments.of(getExampleNameList().get(6)),
+                Arguments.of(getExampleNameList().get(7))
+        );
+
     }
 
     /*
@@ -134,4 +180,5 @@ public class DepartmentServiceTest {
      *  */
 
 
+    }
 }

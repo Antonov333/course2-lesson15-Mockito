@@ -23,7 +23,7 @@ public class DepartmentService {
         return employeeService.getPersonnelNumber();
     }
 
-    public boolean findEmployeeBoolean(String firstname, String lastname) {
+    public boolean findEmployeeBoolean(String firstname, String lastname) { // covered by test
 
         if (employeeService.getEmployeeList().containsKey(Employee.createKey(firstname, lastname))) {
             return true;
