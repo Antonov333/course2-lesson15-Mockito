@@ -20,8 +20,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class DepartmentServiceTest {
 
-    //    private final EmployeeService employeeServiceMock = mock(EmployeeService.class);
-//    private DepartmentService departmentService = new DepartmentService(employeeServiceMock);
     @Mock
     EmployeeService employeeServiceMock;
 
@@ -219,6 +217,12 @@ public class DepartmentServiceTest {
                 alreadyHiredPerson.getLastName(),
                 alreadyHiredPerson.getDeptId(),
                 alreadyHiredPerson.getSalary()));
+
+        when(employeeServiceMock.addEmployee("Absolute", "New", dept, salary)).
+                thenThrow(EmployeeStorageIsFullException.class);
+
+        assertThrows(EmployeeStorageIsFullException.class, () -> departmentService.addEmployee(
+                "Absolute", "New", dept, salary));
     }
 
     @Test
@@ -281,33 +285,32 @@ public class DepartmentServiceTest {
             assertEquals(expected, departmentService.deptSalaryMax(i));
         } // made sure all department salaries counted correctly
 
-        assertThrows(DeptIdInvalidException.class, () -> departmentService.deptSalarySum(null));
+        assertThrows(DeptIdInvalidException.class, () -> departmentService.deptSalaryMax(null));
         //made sure exception thrown in case of null deptId
 
-        assertThrows(DeptIdInvalidException.class, () -> departmentService.deptSalarySum(0));
+        assertThrows(DeptIdInvalidException.class, () -> departmentService.deptSalaryMax(0));
+        // made sure exception thrown in case of non-existing department
+    }
+
+    @Test
+    void deptSalaryMinTest() {
+        HashMap<String, Employee> testCrew = exampleCrewRandomDeptAndSalary();
+        Set<Integer> deptSet = testCrew.values().stream().map(employee -> employee.getDeptId()).collect(Collectors.toSet());
+
+        when(employeeServiceMock.getEmployeeList()).thenReturn(testCrew);
+        for (Integer i : deptSet
+        ) {
+            Integer expected = 0;
+            List<Employee> deptCrew = departmentService.getDeptCrew(i);
+            deptCrew.sort(Comparator.comparingInt(employee -> employee.getSalary()));
+            expected = deptCrew.get(0).getSalary();
+            assertEquals(expected, departmentService.deptSalaryMin(i));
+        } // made sure all department salaries counted correctly
+
+        assertThrows(DeptIdInvalidException.class, () -> departmentService.deptSalaryMin(null));
+        //made sure exception thrown in case of null deptId
+
+        assertThrows(DeptIdInvalidException.class, () -> departmentService.deptSalaryMin(0));
         // made sure exception thrown in case of non-existing department
     }
 }
-
-
-//        personNames.forEach(personName -> Arguments.of(personName.getFirstName(),personName.getLastName()));
-
- /*       return Stream.of(
-                Arguments.of(getExampleNameList().get(0)),
-                Arguments.of(getExampleNameList().get(1)),
-                Arguments.of(getExampleNameList().get(2)),
-                Arguments.of(getExampleNameList().get(3)),
-                Arguments.of(getExampleNameList().get(4)),
-                Arguments.of(getExampleNameList().get(5)),
-                Arguments.of(getExampleNameList().get(6)),
-                Arguments.of(getExampleNameList().get(7))
-        );
-
-    }
-
-    /*
-     * Необходимо покрыть тестами все операции по работе с отделами из DepartmentService.
-     * Нужно «замокать» EmployeeService, который возвращает список сотрудников, а уже затем покрыть
-     * все методы сервиса тестами с максимальным количеством придуманных ситуаций.
-     * Например, когда переданный отдел отсутствует или вообще не передан пользователем.
-     *  */

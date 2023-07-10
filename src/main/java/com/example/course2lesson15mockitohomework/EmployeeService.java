@@ -101,10 +101,6 @@ public class EmployeeService {
         return employeeList;
     }
 
-    public String departments() {
-        return "Under construction, sorry";
-    }
-
     public void setMaxPersonnelNumber(int maxPersonnelNumber) {
         this.maxPersonnelNumber = maxPersonnelNumber;
     }
