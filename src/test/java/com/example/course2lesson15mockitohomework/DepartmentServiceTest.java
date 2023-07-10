@@ -26,7 +26,6 @@ public class DepartmentServiceTest {
     @InjectMocks
     DepartmentService departmentService;
 
-
     public static HashMap<String, Employee> exampleCrewRandomDeptAndSalary() {
 
         HashMap<String, Employee> crew = new HashMap<>();
@@ -90,9 +89,7 @@ public class DepartmentServiceTest {
     private static Stream<Arguments> namesProvider() {
 
         List<PersonName> personNames = getExampleNameList();
-
-//        Stream s  = personNames.stream(personName -> Arguments.of(personName));
-
+        
         return Stream.of(
                 Arguments.of(getExampleNameList().get(0).getFirstName(), getExampleNameList().get(0).getLastName()),
                 Arguments.of(getExampleNameList().get(1).getFirstName(), getExampleNameList().get(1).getLastName()),

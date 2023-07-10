@@ -17,6 +17,15 @@ import static org.junit.jupiter.api.Assertions.*;
 public class EmployeeServiceTest {
     EmployeeService employeeService100 = new EmployeeService();
 
+    static Stream<Arguments> maxPersNumProvider() {
+        Random r = new Random();
+        return Stream.of(
+                Arguments.of(r.nextInt(5, 50)),
+                Arguments.of(r.nextInt(5, 50)),
+                Arguments.of(r.nextInt(5, 50)))
+                ;
+    }
+
     @Test
     void getMaxPersonnelNumberTest() {
         assertEquals(100, employeeService100.getMaxPersonnelNumber());
@@ -116,16 +125,6 @@ public class EmployeeServiceTest {
         EmployeeService es = new EmployeeService();
         es.setMaxPersonnelNumber(maxPersNum.intValue());
         assertEquals(maxPersNum.intValue(), es.getMaxPersonnelNumber());
-    }
-
-
-    static Stream<Arguments> maxPersNumProvider() {
-        Random r = new Random();
-        return Stream.of(
-                Arguments.of(r.nextInt(5, 50)),
-                Arguments.of(r.nextInt(5, 50)),
-                Arguments.of(r.nextInt(5, 50)))
-                ;
     }
 }
 

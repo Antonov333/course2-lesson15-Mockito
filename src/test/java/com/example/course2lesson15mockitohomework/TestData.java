@@ -87,6 +87,4 @@ public class TestData {
         List<PersonName> personNames = getExampleNameList();
         return personNames.stream().map(personName -> Arguments.of(personName));
     }
-
-
 }
